@@ -1,0 +1,8 @@
+# Flask Web Framework
+flask>=3.1.2
+
+# Environment variable management
+python-dotenv>=1.2.1
+
+# Google Gemini AI API
+google-generativeai>=0.8.5
