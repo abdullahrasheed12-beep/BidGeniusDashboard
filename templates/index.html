@@ -116,6 +116,25 @@
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
+
+        /* Remove default blue focus/active colors */
+        *:focus {
+            outline: none;
+        }
+
+        select option {
+            background-color: #1a2332;
+            color: white;
+        }
+
+        /* Unified text colors */
+        .text-success {
+            color: #4dd4ac !important;
+        }
+
+        .text-info {
+            color: #5dade2 !important;
+        }
     </style>
 </head>
 <body>
@@ -601,33 +620,33 @@
 
         mockJobsBtn.addEventListener('click', () => {
             currentJobSource = 'mock';
-            mockJobsBtn.classList.add('bg-white', 'text-blue-600', 'shadow-sm');
-            mockJobsBtn.classList.remove('text-gray-600');
-            remoteJobsBtn.classList.remove('bg-white', 'text-blue-600', 'shadow-sm');
-            remoteJobsBtn.classList.add('text-gray-600');
+            mockJobsBtn.classList.add('glass-btn-primary', 'text-white');
+            mockJobsBtn.classList.remove('opacity-70');
+            remoteJobsBtn.classList.remove('glass-btn-primary');
+            remoteJobsBtn.classList.add('text-white', 'opacity-70');
             filtersSection.classList.add('hidden');
             window.location.reload();
         });
 
         remoteJobsBtn.addEventListener('click', () => {
             currentJobSource = 'remote';
-            remoteJobsBtn.classList.add('bg-white', 'text-blue-600', 'shadow-sm');
-            remoteJobsBtn.classList.remove('text-gray-600');
-            mockJobsBtn.classList.remove('bg-white', 'text-blue-600', 'shadow-sm');
-            mockJobsBtn.classList.add('text-gray-600');
+            remoteJobsBtn.classList.add('glass-btn-primary', 'text-white');
+            remoteJobsBtn.classList.remove('opacity-70');
+            mockJobsBtn.classList.remove('glass-btn-primary');
+            mockJobsBtn.classList.add('text-white', 'opacity-70');
             filtersSection.classList.remove('hidden');
             fetchRemoteJobs();
         });
 
         async function fetchRemoteJobs() {
             try {
-                jobFeedContainer.innerHTML = '<div class="text-center py-12"><div class="loader mx-auto mb-4"></div><p class="text-gray-600">Fetching live remote jobs...</p></div>';
+                jobFeedContainer.innerHTML = '<div class="text-center py-12"><div class="loader mx-auto mb-4"></div><p class="text-white opacity-80">Fetching live remote jobs...</p></div>';
                 
                 const response = await fetch('/api/jobs?source=all');
                 const data = await response.json();
 
                 if (!data.success || !data.jobs || data.jobs.length === 0) {
-                    jobFeedContainer.innerHTML = '<div class="text-center py-12"><p class="text-gray-500">No jobs found. Please try again later.</p></div>';
+                    jobFeedContainer.innerHTML = '<div class="text-center py-12"><p class="text-white opacity-70">No jobs found. Please try again later.</p></div>';
                     return;
                 }
 
@@ -635,7 +654,7 @@
                 applyFilters();
             } catch (error) {
                 console.error('Error fetching remote jobs:', error);
-                jobFeedContainer.innerHTML = '<div class="text-center py-12"><p class="text-red-500">Error loading jobs. Please try again.</p></div>';
+                jobFeedContainer.innerHTML = '<div class="text-center py-12"><p class="text-white opacity-80">Error loading jobs. Please try again.</p></div>';
             }
         }
 
@@ -695,31 +714,31 @@
 
         function renderJobs(jobs) {
             if (!jobs || jobs.length === 0) {
-                jobFeedContainer.innerHTML = '<div class="text-center py-12"><p class="text-gray-500">No jobs found.</p></div>';
+                jobFeedContainer.innerHTML = '<div class="text-center py-12"><p class="text-white opacity-70">No jobs found.</p></div>';
                 return;
             }
 
             jobFeedContainer.innerHTML = jobs.map(job => `
-                <div class="job-card bg-gray-50 border border-gray-200 rounded-lg p-5 cursor-pointer" 
+                <div class="job-card rounded-lg p-5 cursor-pointer" 
                      data-job-id="${job.id}"
                      data-job-title="${job.title}"
                      data-job-description="${job.description || job.summary}"
                      data-job-budget="${job.budget}">
                     <div class="flex justify-between items-start mb-2">
-                        <h3 class="text-lg font-semibold text-gray-800 hover:text-blue-600">${job.title}</h3>
-                        <span class="text-sm text-gray-500">${job.posted}</span>
+                        <h3 class="text-lg font-semibold text-white">${job.title}</h3>
+                        <span class="text-sm text-white opacity-70">${job.posted}</span>
                     </div>
-                    ${job.source ? `<span class="inline-block px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded-full mb-2">${job.source}</span>` : ''}
-                    <p class="text-gray-600 text-sm mb-3">${job.description || job.summary}</p>
-                    ${job.link ? `<a href="${job.link}" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm mb-3 block flex items-center gap-1">View Full Job <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg></a>` : ''}
+                    ${job.source ? `<span class="inline-block px-2 py-1 glass-btn text-white text-xs rounded-full mb-2">${job.source}</span>` : ''}
+                    <p class="text-white opacity-80 text-sm mb-3">${job.description || job.summary}</p>
+                    ${job.link ? `<a href="${job.link}" target="_blank" class="text-white opacity-90 hover:opacity-100 text-sm mb-3 block flex items-center gap-1">View Full Job <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg></a>` : ''}
                     <div class="flex flex-wrap gap-2 mb-3">
-                        ${job.job_type ? `<span class="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">💼 ${job.job_type}</span>` : ''}
-                        ${job.location ? `<span class="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">📍 ${job.location}</span>` : ''}
-                        ${job.skills && job.skills.length > 0 ? job.skills.map(skill => `<span class="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">${skill}</span>`).join('') : ''}
+                        ${job.job_type ? `<span class="px-2 py-1 glass-btn text-white text-xs rounded-full">💼 ${job.job_type}</span>` : ''}
+                        ${job.location ? `<span class="px-2 py-1 glass-btn text-white text-xs rounded-full">📍 ${job.location}</span>` : ''}
+                        ${job.skills && job.skills.length > 0 ? job.skills.map(skill => `<span class="px-2 py-1 glass-btn text-white text-xs rounded-full">${skill}</span>`).join('') : ''}
                     </div>
                     <div class="flex justify-between items-center">
-                        <span class="text-green-600 font-semibold">${job.budget}</span>
-                        <button class="generate-btn bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition">
+                        <span class="text-white font-semibold">${job.budget}</span>
+                        <button class="generate-btn glass-btn-primary text-white px-4 py-2 rounded-md text-sm font-medium">
                             Generate Proposal
                         </button>
                     </div>
