@@ -73,6 +73,145 @@ Do not include placeholder text like [Your Name] or generic statements. Write as
             'error': f'Error generating proposal: {str(e)}'
         }), 500
 
+@app.route('/api/generate-application', methods=['POST'])
+def generate_application():
+    """
+    Generate a complete job application package including:
+    - Cover letter tailored to job and resume
+    - Interview questions based on job requirements
+    - Answers to questions based on resume experience
+    """
+    try:
+        if not GEMINI_API_KEY:
+            return jsonify({
+                'error': 'GEMINI_API_KEY not configured. Please add your API key to the .env file.'
+            }), 400
+        
+        data = request.json
+        job = data.get('job', {})
+        resume = data.get('resume', '')
+        
+        if not resume:
+            return jsonify({
+                'error': 'Resume text is required'
+            }), 400
+        
+        job_title = job.get('title', '')
+        job_description = job.get('description', '')
+        
+        # Generate cover letter
+        cover_letter_prompt = f"""You are an expert career coach. Write a compelling, professional cover letter for this job application.
+
+Job Title: {job_title}
+
+Job Description: {job_description}
+
+Candidate's Resume:
+{resume}
+
+Write a personalized cover letter that:
+1. Directly addresses the job requirements
+2. Highlights relevant experience from the resume
+3. Shows genuine interest in the role
+4. Is professional yet personable
+5. Is concise (250-350 words)
+
+Write the cover letter in first person, ready to copy and paste. Do not include placeholders like [Date] or [Company Name]."""
+
+        # Generate interview questions
+        questions_prompt = f"""You are an expert interviewer. Based on this job description, generate 5 common interview questions that would likely be asked.
+
+Job Title: {job_title}
+
+Job Description: {job_description}
+
+Generate 5 realistic interview questions that:
+1. Focus on key skills and requirements from the job description
+2. Are commonly asked in real interviews
+3. Are specific to this role
+4. Range from technical to behavioral
+
+Return ONLY a JSON array of questions, like this:
+["Question 1", "Question 2", "Question 3", "Question 4", "Question 5"]"""
+
+        model = genai.GenerativeModel('gemini-2.5-flash')
+        
+        # Generate cover letter
+        cover_response = model.generate_content(cover_letter_prompt)
+        if not cover_response or not hasattr(cover_response, 'text') or not cover_response.text:
+            return jsonify({
+                'error': 'Failed to generate cover letter'
+            }), 400
+        
+        cover_letter = cover_response.text
+        
+        # Generate questions
+        questions_response = model.generate_content(questions_prompt)
+        if not questions_response or not hasattr(questions_response, 'text') or not questions_response.text:
+            return jsonify({
+                'error': 'Failed to generate interview questions'
+            }), 400
+        
+        # Parse questions from response
+        try:
+            questions_text = questions_response.text.strip()
+            # Try to extract JSON array from response
+            if questions_text.startswith('[') and questions_text.endswith(']'):
+                questions_list = json.loads(questions_text)
+            else:
+                # Fallback: split by newlines and filter
+                questions_list = [q.strip('- 0123456789.') for q in questions_text.split('\n') if q.strip()]
+        except:
+            # Fallback questions
+            questions_list = [
+                "Tell me about your relevant experience for this role.",
+                "What interests you about this position?",
+                "Describe a challenging project you've worked on.",
+                "What are your salary expectations?",
+                "Where do you see yourself in 3 years?"
+            ]
+        
+        # Generate answers for each question
+        qa_pairs = []
+        for question in questions_list[:5]:  # Limit to 5 questions
+            answer_prompt = f"""You are helping a job candidate prepare for an interview. Based on their resume, generate a strong, concise answer to this interview question.
+
+Interview Question: {question}
+
+Candidate's Resume:
+{resume}
+
+Generate a professional, concise answer (2-3 sentences) that:
+1. Directly answers the question
+2. References specific experience from the resume when relevant
+3. Is confident and professional
+4. Uses first person ("I have...")
+
+Return ONLY the answer text, no introduction or explanation."""
+
+            answer_response = model.generate_content(answer_prompt)
+            if answer_response and hasattr(answer_response, 'text') and answer_response.text:
+                answer = answer_response.text.strip()
+            else:
+                answer = "Based on my experience outlined in my resume, I have the relevant skills and background for this aspect of the role."
+            
+            qa_pairs.append({
+                'question': question,
+                'answer': answer
+            })
+        
+        return jsonify({
+            'success': True,
+            'cover_letter': cover_letter,
+            'questions': qa_pairs
+        })
+    
+    except Exception as e:
+        app.logger.error(f"Error generating application: {str(e)}")
+        return jsonify({
+            'error': f'Error generating application: {str(e)}'
+        }), 500
+
 @app.route('/api/jobs')
 def get_remote_jobs():
     """
