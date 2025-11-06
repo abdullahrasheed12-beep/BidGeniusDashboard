@@ -191,7 +191,24 @@
             <!-- Proposal Section (Right 1/3 on desktop, modal on mobile) -->
             <div class="lg:col-span-1 hidden lg:block">
                 <div class="bg-white rounded-lg shadow-md p-6 sticky top-24">
-                    <h2 class="text-2xl font-bold text-gray-800 mb-4">Proposal Generator</h2>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">Application Prep</h2>
+                    
+                    <!-- Resume Upload Section -->
+                    <div class="mb-4 p-3 bg-blue-50 rounded-lg border-2 border-dashed border-blue-200">
+                        <div class="text-center">
+                            <svg class="w-10 h-10 mx-auto mb-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                            </svg>
+                            <p class="text-xs text-gray-700 mb-2" id="resumeStatus">📄 Upload Resume</p>
+                            <input type="file" id="resumeUpload" accept=".pdf,.txt" class="hidden">
+                            <label for="resumeUpload" class="inline-block px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded cursor-pointer transition">
+                                Choose File
+                            </label>
+                            <button id="clearResume" class="hidden ml-2 px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 text-xs font-medium rounded transition">
+                                Clear
+                            </button>
+                        </div>
+                    </div>
                     
                     <!-- Empty State -->
                     <div id="emptyState" class="text-center py-12">
@@ -208,24 +225,42 @@
                     </div>
 
                     <!-- Proposal Display -->
-                    <div id="proposalDisplay" class="hidden">
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Generated Proposal</label>
-                            <textarea 
-                                id="proposalText" 
-                                rows="12" 
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                                placeholder="Your AI-generated proposal will appear here..."
-                            ></textarea>
+                    <div id="proposalDisplay" class="hidden max-h-[70vh] overflow-y-auto">
+                        <div class="space-y-4">
+                            <!-- Cover Letter -->
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">📝 Cover Letter</label>
+                                <textarea 
+                                    id="proposalText" 
+                                    rows="6" 
+                                    class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                                    placeholder="Your AI-generated cover letter..."
+                                ></textarea>
+                            </div>
+
+                            <!-- Interview Questions & Answers -->
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">❓ Interview Prep</label>
+                                <div id="qaSection" class="space-y-3">
+                                    <!-- Questions will be inserted here -->
+                                </div>
+                            </div>
                         </div>
-                        <div class="space-y-2">
+
+                        <div class="space-y-2 mt-4 sticky bottom-0 bg-white pt-4 border-t">
                             <button id="copyBtn" class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md font-medium transition flex items-center justify-center">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
                                 </svg>
-                                Copy to Clipboard
+                                Copy All
                             </button>
-                            <button id="regenerateBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium transition flex items-center justify-center">
+                            <button id="applyNowBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium transition flex items-center justify-center">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                </svg>
+                                Apply Now
+                            </button>
+                            <button id="regenerateBtn" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-md font-medium transition flex items-center justify-center">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                                 </svg>
@@ -247,12 +282,29 @@
         <div class="fixed inset-x-0 bottom-0 bg-white rounded-t-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
             <div class="p-6">
                 <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-2xl font-bold text-gray-800">Proposal Generator</h2>
+                    <h2 class="text-2xl font-bold text-gray-800">Application Prep</h2>
                     <button id="closeModal" class="text-gray-500 hover:text-gray-700">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
                     </button>
+                </div>
+                
+                <!-- Resume Upload Section Mobile -->
+                <div class="mb-4 p-3 bg-blue-50 rounded-lg border-2 border-dashed border-blue-200">
+                    <div class="text-center">
+                        <svg class="w-10 h-10 mx-auto mb-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                        </svg>
+                        <p class="text-xs text-gray-700 mb-2" id="resumeStatusMobile">📄 Upload Resume</p>
+                        <input type="file" id="resumeUploadMobile" accept=".pdf,.txt" class="hidden">
+                        <label for="resumeUploadMobile" class="inline-block px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded cursor-pointer transition">
+                            Choose File
+                        </label>
+                        <button id="clearResumeMobile" class="hidden ml-2 px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 text-xs font-medium rounded transition">
+                            Clear
+                        </button>
+                    </div>
                 </div>
                 
                 <!-- Empty State -->
@@ -271,23 +323,41 @@
 
                 <!-- Proposal Display -->
                 <div id="proposalDisplayMobile" class="hidden">
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Generated Proposal</label>
-                        <textarea 
-                            id="proposalTextMobile" 
-                            rows="10" 
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                            placeholder="Your AI-generated proposal will appear here..."
-                        ></textarea>
+                    <div class="space-y-4">
+                        <!-- Cover Letter -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">📝 Cover Letter</label>
+                            <textarea 
+                                id="proposalTextMobile" 
+                                rows="6" 
+                                class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                                placeholder="Your AI-generated cover letter..."
+                            ></textarea>
+                        </div>
+
+                        <!-- Interview Questions & Answers -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">❓ Interview Prep</label>
+                            <div id="qaSectionMobile" class="space-y-3">
+                                <!-- Questions will be inserted here -->
+                            </div>
+                        </div>
                     </div>
-                    <div class="space-y-2">
+
+                    <div class="space-y-2 mt-4">
                         <button id="copyBtnMobile" class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md font-medium transition flex items-center justify-center">
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
                             </svg>
-                            Copy to Clipboard
+                            Copy All
                         </button>
-                        <button id="regenerateBtnMobile" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium transition flex items-center justify-center">
+                        <button id="applyNowBtnMobile" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium transition flex items-center justify-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                            </svg>
+                            Apply Now
+                        </button>
+                        <button id="regenerateBtnMobile" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-md font-medium transition flex items-center justify-center">
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                             </svg>
@@ -307,6 +377,67 @@
         let currentJobData = null;
         let currentJobSource = 'mock';
         let allJobs = [];
+        let resumeText = localStorage.getItem('resumeText') || '';
+        let currentJobLink = '';
+
+        // Resume upload handling
+        const resumeUpload = document.getElementById('resumeUpload');
+        const resumeUploadMobile = document.getElementById('resumeUploadMobile');
+        const resumeStatus = document.getElementById('resumeStatus');
+        const resumeStatusMobile = document.getElementById('resumeStatusMobile');
+        const clearResume = document.getElementById('clearResume');
+        const clearResumeMobile = document.getElementById('clearResumeMobile');
+
+        // Check if resume is already uploaded
+        if (resumeText) {
+            resumeStatus.textContent = '✅ Resume uploaded';
+            resumeStatusMobile.textContent = '✅ Resume uploaded';
+            clearResume.classList.remove('hidden');
+            clearResumeMobile.classList.remove('hidden');
+        }
+
+        function handleResumeUpload(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                resumeText = e.target.result;
+                localStorage.setItem('resumeText', resumeText);
+                resumeStatus.textContent = '✅ ' + file.name;
+                resumeStatusMobile.textContent = '✅ ' + file.name;
+                clearResume.classList.remove('hidden');
+                clearResumeMobile.classList.remove('hidden');
+            };
+            reader.readAsText(file);
+        }
+
+        resumeUpload.addEventListener('change', (e) => {
+            if (e.target.files[0]) handleResumeUpload(e.target.files[0]);
+        });
+
+        resumeUploadMobile.addEventListener('change', (e) => {
+            if (e.target.files[0]) handleResumeUpload(e.target.files[0]);
+        });
+
+        clearResume.addEventListener('click', () => {
+            resumeText = '';
+            localStorage.removeItem('resumeText');
+            resumeStatus.textContent = '📄 Upload Resume';
+            resumeStatusMobile.textContent = '📄 Upload Resume';
+            clearResume.classList.add('hidden');
+            clearResumeMobile.classList.add('hidden');
+            resumeUpload.value = '';
+            resumeUploadMobile.value = '';
+        });
+
+        clearResumeMobile.addEventListener('click', () => {
+            resumeText = '';
+            localStorage.removeItem('resumeText');
+            resumeStatus.textContent = '📄 Upload Resume';
+            resumeStatusMobile.textContent = '📄 Upload Resume';
+            clearResume.classList.add('hidden');
+            clearResumeMobile.classList.add('hidden');
+            resumeUpload.value = '';
+            resumeUploadMobile.value = '';
+        });
 
         // Job source toggle
         const mockJobsBtn = document.getElementById('mockJobsBtn');
@@ -464,6 +595,10 @@
                         budget: card.dataset.jobBudget
                     };
 
+                    // Find job link from the card
+                    const linkElement = card.querySelector('a[target="_blank"]');
+                    currentJobLink = linkElement ? linkElement.href : '';
+
                     if (window.innerWidth < 1024) {
                         openMobileModal();
                     }
@@ -528,30 +663,54 @@
             const proposalDisplay = document.getElementById(isMobile ? 'proposalDisplayMobile' : 'proposalDisplay');
             const errorMessage = document.getElementById(isMobile ? 'errorMessageMobile' : 'errorMessage');
 
+            if (!resumeText) {
+                errorMessage.textContent = '⚠️ Please upload your resume first!';
+                errorMessage.classList.remove('hidden');
+                setTimeout(() => errorMessage.classList.add('hidden'), 3000);
+                return;
+            }
+
             emptyState.classList.add('hidden');
             loadingState.classList.remove('hidden');
             proposalDisplay.classList.add('hidden');
             errorMessage.classList.add('hidden');
 
             try {
-                const response = await fetch('/api/generate-proposal', {
+                const response = await fetch('/api/generate-application', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify(currentJobData)
+                    body: JSON.stringify({
+                        job: currentJobData,
+                        resume: resumeText
+                    })
                 });
 
                 const data = await response.json();
 
-                if (data.success && data.proposal) {
+                if (data.success && data.cover_letter && data.questions) {
                     const proposalTextEl = document.getElementById(isMobile ? 'proposalTextMobile' : 'proposalText');
-                    proposalTextEl.value = data.proposal;
+                    const qaSection = document.getElementById(isMobile ? 'qaSectionMobile' : 'qaSection');
+                    
+                    proposalTextEl.value = data.cover_letter;
+                    
+                    // Render Q&A
+                    qaSection.innerHTML = data.questions.map((qa, index) => `
+                        <div class="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                            <p class="font-semibold text-sm text-gray-800 mb-2">${index + 1}. ${qa.question}</p>
+                            <textarea 
+                                class="w-full px-2 py-2 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none" 
+                                rows="3"
+                            >${qa.answer}</textarea>
+                        </div>
+                    `).join('');
+
                     loadingState.classList.add('hidden');
                     proposalDisplay.classList.remove('hidden');
                     proposalDisplay.classList.add('fade-in');
                 } else {
-                    throw new Error(data.error || 'Failed to generate proposal - no content returned');
+                    throw new Error(data.error || 'Failed to generate application');
                 }
             } catch (error) {
                 loadingState.classList.add('hidden');
@@ -561,26 +720,54 @@
             }
         }
 
-        // Copy to clipboard
-        document.getElementById('copyBtn').addEventListener('click', async () => {
-            const proposalText = document.getElementById('proposalText');
-            const successMsg = document.getElementById('copySuccess');
+        // Copy all to clipboard
+        function copyAllContent(isMobile) {
+            const proposalText = document.getElementById(isMobile ? 'proposalTextMobile' : 'proposalText');
+            const qaSection = document.getElementById(isMobile ? 'qaSectionMobile' : 'qaSection');
+            const successMsg = document.getElementById(isMobile ? 'copySuccessMobile' : 'copySuccess');
+            
+            // Collect all Q&A
+            const qaTextareas = qaSection.querySelectorAll('textarea');
+            const questions = qaSection.querySelectorAll('p.font-semibold');
+            let qaText = '\n\nINTERVIEW PREPARATION:\n\n';
+            questions.forEach((q, i) => {
+                qaText += `${q.textContent}\n${qaTextareas[i].value}\n\n`;
+            });
+
+            const fullText = `COVER LETTER:\n\n${proposalText.value}${qaText}`;
             
             try {
                 if (navigator.clipboard && navigator.clipboard.writeText) {
-                    await navigator.clipboard.writeText(proposalText.value);
+                    navigator.clipboard.writeText(fullText);
                 } else {
-                    proposalText.select();
+                    const textArea = document.createElement('textarea');
+                    textArea.value = fullText;
+                    document.body.appendChild(textArea);
+                    textArea.select();
                     document.execCommand('copy');
+                    document.body.removeChild(textArea);
                 }
                 
                 successMsg.classList.remove('hidden');
-                setTimeout(() => {
-                    successMsg.classList.add('hidden');
-                }, 2000);
+                setTimeout(() => successMsg.classList.add('hidden'), 2000);
             } catch (err) {
                 console.error('Failed to copy:', err);
-                proposalText.select();
+            }
+        }
+
+        document.getElementById('copyBtn').addEventListener('click', () => copyAllContent(false));
+        document.getElementById('copyBtnMobile').addEventListener('click', () => copyAllContent(true));
+
+        // Apply Now buttons
+        document.getElementById('applyNowBtn').addEventListener('click', () => {
+            if (currentJobLink) {
+                window.open(currentJobLink, '_blank');
+            }
+        });
+
+        document.getElementById('applyNowBtnMobile').addEventListener('click', () => {
+            if (currentJobLink) {
+                window.open(currentJobLink, '_blank');
             }
         });
 
@@ -591,30 +778,6 @@
             }
         });
 
-        // Mobile Copy to clipboard
-        document.getElementById('copyBtnMobile').addEventListener('click', async () => {
-            const proposalText = document.getElementById('proposalTextMobile');
-            const successMsg = document.getElementById('copySuccessMobile');
-            
-            try {
-                if (navigator.clipboard && navigator.clipboard.writeText) {
-                    await navigator.clipboard.writeText(proposalText.value);
-                } else {
-                    proposalText.select();
-                    document.execCommand('copy');
-                }
-                
-                successMsg.classList.remove('hidden');
-                setTimeout(() => {
-                    successMsg.classList.add('hidden');
-                }, 2000);
-            } catch (err) {
-                console.error('Failed to copy:', err);
-                proposalText.select();
-            }
-        });
-
-        // Mobile Regenerate
         document.getElementById('regenerateBtnMobile').addEventListener('click', () => {
             if (currentJobData) {
                 generateProposal();
