@@ -55,6 +55,31 @@
 
     <!-- Main Container -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Job Source Toggle -->
+        <div class="mb-6 bg-white rounded-lg shadow-md p-4">
+            <div class="flex items-center justify-between flex-wrap gap-4">
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm font-medium text-gray-700">Job Source:</span>
+                    <div class="flex bg-gray-100 rounded-lg p-1">
+                        <button id="mockJobsBtn" class="px-4 py-2 rounded-md text-sm font-medium transition bg-white text-blue-600 shadow-sm">
+                            Mock Jobs
+                        </button>
+                        <button id="indeedJobsBtn" class="px-4 py-2 rounded-md text-sm font-medium transition text-gray-600 hover:text-gray-900">
+                            Indeed Feed
+                        </button>
+                    </div>
+                </div>
+                <div id="indeedSearchForm" class="hidden flex-1 max-w-md">
+                    <input 
+                        type="text" 
+                        id="indeedQuery" 
+                        placeholder="Job title (e.g., marketing analyst)" 
+                        class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                </div>
+            </div>
+        </div>
+
         <!-- Search Bar -->
         <div class="mb-8">
             <div class="relative">
@@ -67,6 +92,9 @@
                 <svg class="absolute left-4 top-3.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                 </svg>
+                <button id="fetchIndeedBtn" class="hidden absolute right-3 top-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition">
+                    Fetch Jobs
+                </button>
             </div>
         </div>
 
@@ -227,15 +255,135 @@
 
     <script>
         let currentJobData = null;
+        let currentJobSource = 'mock';
+        let allJobs = [];
+
+        // Job source toggle
+        const mockJobsBtn = document.getElementById('mockJobsBtn');
+        const indeedJobsBtn = document.getElementById('indeedJobsBtn');
+        const indeedSearchForm = document.getElementById('indeedSearchForm');
+        const indeedQuery = document.getElementById('indeedQuery');
+        const fetchIndeedBtn = document.getElementById('fetchIndeedBtn');
+        const jobFeedContainer = document.getElementById('jobFeed');
+
+        mockJobsBtn.addEventListener('click', () => {
+            currentJobSource = 'mock';
+            mockJobsBtn.classList.add('bg-white', 'text-blue-600', 'shadow-sm');
+            mockJobsBtn.classList.remove('text-gray-600');
+            indeedJobsBtn.classList.remove('bg-white', 'text-blue-600', 'shadow-sm');
+            indeedJobsBtn.classList.add('text-gray-600');
+            indeedSearchForm.classList.add('hidden');
+            fetchIndeedBtn.classList.add('hidden');
+            window.location.reload();
+        });
+
+        indeedJobsBtn.addEventListener('click', () => {
+            currentJobSource = 'indeed';
+            indeedJobsBtn.classList.add('bg-white', 'text-blue-600', 'shadow-sm');
+            indeedJobsBtn.classList.remove('text-gray-600');
+            mockJobsBtn.classList.remove('bg-white', 'text-blue-600', 'shadow-sm');
+            mockJobsBtn.classList.add('text-gray-600');
+            indeedSearchForm.classList.remove('hidden');
+            fetchIndeedBtn.classList.remove('hidden');
+            fetchIndeedJobs();
+        });
+
+        async function fetchIndeedJobs(query = 'marketing analyst') {
+            try {
+                jobFeedContainer.innerHTML = '<div class="text-center py-12"><div class="loader mx-auto mb-4"></div><p class="text-gray-600">Fetching Indeed jobs...</p></div>';
+                
+                const response = await fetch(`/api/jobs?q=${encodeURIComponent(query)}`);
+                const data = await response.json();
+
+                if (!data.success || !data.jobs || data.jobs.length === 0) {
+                    jobFeedContainer.innerHTML = '<div class="text-center py-12"><p class="text-gray-500">No jobs found. Try a different search term.</p></div>';
+                    return;
+                }
+
+                allJobs = data.jobs;
+                renderJobs(allJobs);
+            } catch (error) {
+                console.error('Error fetching Indeed jobs:', error);
+                jobFeedContainer.innerHTML = '<div class="text-center py-12"><p class="text-red-500">Error loading jobs. Please try again.</p></div>';
+            }
+        }
+
+        function renderJobs(jobs) {
+            if (!jobs || jobs.length === 0) {
+                jobFeedContainer.innerHTML = '<div class="text-center py-12"><p class="text-gray-500">No jobs found.</p></div>';
+                return;
+            }
+
+            jobFeedContainer.innerHTML = jobs.map(job => `
+                <div class="job-card bg-gray-50 border border-gray-200 rounded-lg p-5 cursor-pointer" 
+                     data-job-id="${job.id}"
+                     data-job-title="${job.title}"
+                     data-job-description="${job.description || job.summary}"
+                     data-job-budget="${job.budget}">
+                    <div class="flex justify-between items-start mb-2">
+                        <h3 class="text-lg font-semibold text-gray-800 hover:text-blue-600">${job.title}</h3>
+                        <span class="text-sm text-gray-500">${job.posted}</span>
+                    </div>
+                    <p class="text-gray-600 text-sm mb-3">${job.description || job.summary}</p>
+                    ${job.link ? `<a href="${job.link}" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm mb-3 block">View on Indeed →</a>` : ''}
+                    ${job.skills && job.skills.length > 0 ? `
+                        <div class="flex flex-wrap gap-2 mb-3">
+                            ${job.skills.map(skill => `<span class="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">${skill}</span>`).join('')}
+                        </div>
+                    ` : ''}
+                    <div class="flex justify-between items-center">
+                        <span class="text-green-600 font-semibold">${job.budget}</span>
+                        <button class="generate-btn bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition">
+                            Generate Proposal
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+            attachProposalHandlers();
+        }
+
+        function attachProposalHandlers() {
+            document.querySelectorAll('.generate-btn').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    const card = e.target.closest('.job-card');
+                    
+                    currentJobData = {
+                        title: card.dataset.jobTitle,
+                        description: card.dataset.jobDescription,
+                        budget: card.dataset.jobBudget
+                    };
+
+                    if (window.innerWidth < 1024) {
+                        openMobileModal();
+                    }
+
+                    await generateProposal();
+                });
+            });
+        }
+
+        fetchIndeedBtn.addEventListener('click', () => {
+            const query = indeedQuery.value || 'marketing analyst';
+            fetchIndeedJobs(query);
+        });
+
+        indeedQuery.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const query = indeedQuery.value || 'marketing analyst';
+                fetchIndeedJobs(query);
+            }
+        });
 
         // Search functionality
         const searchInput = document.getElementById('searchInput');
-        const jobCards = document.querySelectorAll('.job-card');
         const noResults = document.getElementById('noResults');
 
         searchInput.addEventListener('input', (e) => {
             const searchTerm = e.target.value.toLowerCase();
             let visibleCount = 0;
+            const jobCards = document.querySelectorAll('.job-card');
 
             jobCards.forEach(card => {
                 const title = card.dataset.jobTitle.toLowerCase();
@@ -251,6 +399,8 @@
 
             noResults.classList.toggle('hidden', visibleCount > 0);
         });
+
+        attachProposalHandlers();
 
         // Mobile modal controls
         const mobileModal = document.getElementById('mobileModal');
@@ -271,26 +421,6 @@
             if (e.target === mobileModal) closeMobileModal();
         });
 
-        // Generate proposal
-        document.querySelectorAll('.generate-btn').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
-                e.stopPropagation();
-                const card = e.target.closest('.job-card');
-                
-                currentJobData = {
-                    title: card.dataset.jobTitle,
-                    description: card.dataset.jobDescription,
-                    budget: card.dataset.jobBudget
-                };
-
-                // Check if mobile
-                if (window.innerWidth < 1024) {
-                    openMobileModal();
-                }
-
-                await generateProposal();
-            });
-        });
 
         async function generateProposal() {
             const isMobile = window.innerWidth < 1024;

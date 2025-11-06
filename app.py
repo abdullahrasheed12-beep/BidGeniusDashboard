@@ -1,5 +1,7 @@
 import os
 import json
+import feedparser
+from datetime import datetime
 from flask import Flask, render_template, request, jsonify, redirect, url_for
 from dotenv import load_dotenv
 import google.generativeai as genai
@@ -69,6 +71,77 @@ Do not include placeholder text like [Your Name] or generic statements. Write as
     except Exception as e:
         return jsonify({
             'error': f'Error generating proposal: {str(e)}'
+        }), 500
+
+@app.route('/api/jobs')
+def get_indeed_jobs():
+    """
+    Fetch live job listings from Indeed RSS feed.
+    Query parameters:
+    - q: Search query (default: "marketing analyst")
+    - l: Location (default: empty for all locations)
+    """
+    try:
+        query = request.args.get('q', 'marketing analyst')
+        location = request.args.get('l', '')
+        
+        from urllib.parse import quote_plus
+        rss_url = f"https://rss.indeed.com/rss?q={quote_plus(query)}&l={quote_plus(location)}"
+        
+        app.logger.info(f"Fetching Indeed RSS feed: {rss_url}")
+        feed = feedparser.parse(rss_url)
+        
+        if not feed or not feed.entries:
+            return jsonify({
+                'success': False,
+                'error': 'No jobs found or unable to fetch feed',
+                'jobs': []
+            }), 404
+        
+        jobs = []
+        for entry in feed.entries[:20]:
+            try:
+                pub_date = entry.get('published', 'N/A')
+                if hasattr(entry, 'published_parsed') and entry.published_parsed:
+                    pub_date_formatted = datetime(*entry.published_parsed[:6]).strftime('%B %d, %Y')
+                else:
+                    pub_date_formatted = pub_date
+                
+                summary = entry.get('summary', 'No description available')
+                if len(summary) > 200:
+                    summary = summary[:200] + '...'
+                
+                job = {
+                    'id': hash(entry.get('link', '')),
+                    'title': entry.get('title', 'No Title'),
+                    'link': entry.get('link', '#'),
+                    'description': summary,
+                    'summary': summary,
+                    'published': pub_date_formatted,
+                    'posted': pub_date_formatted,
+                    'source': 'Indeed',
+                    'budget': 'Contact employer',
+                    'skills': []
+                }
+                jobs.append(job)
+            except Exception as e:
+                app.logger.error(f"Error parsing job entry: {str(e)}")
+                continue
+        
+        return jsonify({
+            'success': True,
+            'count': len(jobs),
+            'query': query,
+            'location': location,
+            'jobs': jobs
+        })
+    
+    except Exception as e:
+        app.logger.error(f"Error fetching Indeed jobs: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': f'Failed to fetch Indeed jobs: {str(e)}',
+            'jobs': []
         }), 500
 
 @app.route('/callback')
