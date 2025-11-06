@@ -152,16 +152,43 @@ Return ONLY a JSON array of questions, like this:
                 'error': 'Failed to generate interview questions'
             }), 400
         
-        # Parse questions from response
+        # Parse questions from response with robust handling of markdown fences
         try:
             questions_text = questions_response.text.strip()
-            # Try to extract JSON array from response
+            
+            # Remove markdown code fences if present (```json ... ``` or ``` ... ```)
+            if questions_text.startswith('```'):
+                # Find the first newline after opening fence
+                first_newline = questions_text.find('\n')
+                if first_newline != -1:
+                    questions_text = questions_text[first_newline + 1:]
+                # Remove closing fence
+                if questions_text.endswith('```'):
+                    questions_text = questions_text[:-3]
+                questions_text = questions_text.strip()
+            
+            # Try to parse as JSON array
             if questions_text.startswith('[') and questions_text.endswith(']'):
-                questions_list = json.loads(questions_text)
+                parsed_questions = json.loads(questions_text)
+                # Validate that all entries are non-empty strings
+                questions_list = [
+                    q.strip() for q in parsed_questions 
+                    if isinstance(q, str) and len(q.strip()) > 10
+                ]
             else:
-                # Fallback: split by newlines and filter
-                questions_list = [q.strip('- 0123456789.') for q in questions_text.split('\n') if q.strip()]
-        except:
+                # Fallback: parse line-by-line and filter garbage
+                lines = [line.strip('- 0123456789."\'') for line in questions_text.split('\n')]
+                questions_list = [
+                    q for q in lines 
+                    if q and len(q) > 10 and not q.lower().startswith('json')
+                ]
+            
+            # If we still don't have good questions, use fallback
+            if not questions_list or len(questions_list) < 3:
+                raise ValueError("Insufficient valid questions parsed")
+                
+        except Exception as e:
+            app.logger.warning(f"Question parsing failed: {str(e)}, using fallback questions")
             # Fallback questions
             questions_list = [
                 "Tell me about your relevant experience for this role.",
